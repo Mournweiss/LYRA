@@ -12,11 +12,11 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	cfg := &Config{
-		GatewayPort:        os.Getenv("API_GATEWAY_PORT"),
-		GatewayAddress:     os.Getenv("API_GATEWAY_ADDRESS"),
-		WhisperServiceAddr: os.Getenv("WHISPER_SERVICE_ADDRESS"),
+		GatewayPort:        getenvDefault("API_GATEWAY_PORT", "50051"),
+		GatewayAddress:     getenvDefault("API_GATEWAY_ADDRESS", "api-gateway:50051"),
+		WhisperServiceAddr: getenvDefault("WHISPER_SERVICE_ADDRESS", "whisper-service:50052"),
 	}
-	
+
 	if cfg.GatewayPort == "" {
 		return nil, ConfigErrorf("API_GATEWAY_PORT environment variable is required")
 	}
@@ -30,4 +30,14 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func getenvDefault(key, def string) string {
+	val := os.Getenv(key)
+	
+	if val == "" {
+		return def
+	}
+
+	return val
 }

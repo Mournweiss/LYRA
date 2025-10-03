@@ -22,4 +22,4 @@ Development roadmap
 -   [ ] Add validation of uploaded files
 -   [x] Add direct transmission of environment variables to services in compose.yml
 -   [ ] Integrate Redis to manage task statuses and queues
--   [ ] Add default settings in config scripts
+-   [x] Add default settings in config scripts
