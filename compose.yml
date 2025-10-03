@@ -5,6 +5,8 @@ services:
             containerfile: Containerfile
         ports:
             - "50051:50051"
+        volumes:
+            - proto:/app/proto:ro
 
     whisper-service:
         build:
@@ -12,8 +14,20 @@ services:
             containerfile: Containerfile
         ports:
             - "50052:50052"
+        volumes:
+            - proto:/app/proto:ro
 
     telegram-bot:
         build:
             context: ./services/telegram-bot
             containerfile: Containerfile
+        volumes:
+            - proto:/app/proto:ro
+
+volumes:
+    proto:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ./proto

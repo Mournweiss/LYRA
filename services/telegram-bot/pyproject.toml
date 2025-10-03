@@ -6,14 +6,14 @@ authors = ["Maxim Selin <selinmax05@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "3.11"
 python-telegram-bot = "21.1"
 grpcio = "1.62.0"
-grpcio-tools = "1.62.0"
 protobuf = "4.25.3"
 
-[tool.poetry.dev-dependencies]
-pytest = "^8.2.0"
+[tool.poetry.group.dev.dependencies]
+grpcio-tools = "1.62.0"
+pytest = "8.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

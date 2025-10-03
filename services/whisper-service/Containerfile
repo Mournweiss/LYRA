@@ -1,4 +1,18 @@
+FROM ghcr.io/ggml-org/whisper.cpp:main-cuda-7849aff7a2e1f4234aa31b01a1870906d5431959 as builder
+
+WORKDIR /app
+
+RUN apk add --no-cache build-base cmake git protobuf protobuf-dev grpc-dev
+
+COPY . .
+
+RUN protoc -I./proto --cpp_out=./include --grpc_out=./include --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin ./proto/service.proto
+
+RUN cmake . && make
+
 FROM ghcr.io/ggml-org/whisper.cpp:main-cuda-7849aff7a2e1f4234aa31b01a1870906d5431959
 WORKDIR /app
+COPY --from=builder /app/whisper_grpc_server ./whisper_grpc_server
+ENTRYPOINT ["./whisper_grpc_server"]
 
 EXPOSE 50052
