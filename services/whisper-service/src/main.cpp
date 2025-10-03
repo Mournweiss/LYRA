@@ -17,8 +17,8 @@ using lyra::HealthCheckResponse;
 
 class WhisperServiceImpl final : public WhisperService::Service {
     Status Transcribe(ServerContext* context, const TranscribeRequest* request, TranscribeResponse* response) override {
-        response->set_text("");
-        response->set_error("Not implemented");
+        response->set_text("Test transcription result");
+        response->set_error("");
         return Status::OK;
     }
 

@@ -5,8 +5,9 @@ import (
 	"log"
 	"net"
 
+	"github.com/lyra/api-gateway/internal/clients"
+	pb "github.com/lyra/api-gateway/internal"
 	"google.golang.org/grpc"
-	pb "github.com/lyra/api-gateway/proto"
 )
 
 type server struct {
@@ -14,10 +15,7 @@ type server struct {
 }
 
 func (s *server) Transcribe(ctx context.Context, req *pb.TranscribeRequest) (*pb.TranscribeResponse, error) {
-	return &pb.TranscribeResponse{
-		Text:  "",
-		Error: "Not implemented",
-	}, nil
+	return clients.ProxyTranscribe(ctx, req)
 }
 
 func (s *server) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
