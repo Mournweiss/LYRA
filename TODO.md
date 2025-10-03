@@ -15,7 +15,7 @@ Development roadmap
 -   [ ] Add centralized error handling in the api-gateway
 -   [x] Add centralized error handling in the telegram-bot
 -   [ ] Add centralized error handling in the whisper-service
--   [ ] Add centralized config handling in the api-gateway
+-   [x] Add centralized config handling in the api-gateway
 -   [x] Add centralized config handling in the telegram-bot
 -   [ ] Add centralized config handling in the whisper-service
 -   [ ] Replace the file processing stub by accessing whisper.cpp in the whisper-service

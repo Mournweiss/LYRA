@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
+	"github.com/lyra/api-gateway/internal"
 	"github.com/lyra/api-gateway/internal/clients"
 	pb "github.com/lyra/api-gateway/internal"
 	"google.golang.org/grpc"
@@ -23,13 +25,25 @@ func (s *server) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*
 }
 
 func main() {
-	lis, err := net.Listen("tcp", ":50051")
+	cfg, err := internal.LoadConfig()
+	
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
+
+	log.Printf("Starting API Gateway on port %s (address: %s), whisper-service: %s", cfg.GatewayPort, cfg.GatewayAddress, cfg.WhisperServiceAddr)
+
+	listenAddr := ":" + cfg.GatewayPort
+	lis, err := net.Listen("tcp", listenAddr)
+
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
 	grpcServer := grpc.NewServer()
 	pb.RegisterWhisperServiceServer(grpcServer, &server{})
-	log.Println("API Gateway gRPC server listening on :50051")
+	log.Printf("API Gateway gRPC server listening on %s", listenAddr)
+
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
