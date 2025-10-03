@@ -5,8 +5,6 @@ services:
             containerfile: Containerfile
         ports:
             - "${API_GATEWAY_PORT:-50051}:${API_GATEWAY_PORT:-50051}"
-        volumes:
-            - proto:/app/proto:ro
         env_file:
             - .env
 
@@ -16,8 +14,6 @@ services:
             containerfile: Containerfile
         ports:
             - "${WHISPER_SERVICE_PORT:-50052}:${WHISPER_SERVICE_PORT:-50052}"
-        volumes:
-            - proto:/app/proto:ro
         env_file:
             - .env
 
@@ -25,8 +21,6 @@ services:
         build:
             context: ./services/telegram-bot
             containerfile: Containerfile
-        volumes:
-            - proto:/app/proto:ro
         env_file:
             - .env
 

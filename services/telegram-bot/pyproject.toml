@@ -6,7 +6,7 @@ authors = ["Maxim Selin <selinmax05@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.11"
+python = "^3.11"
 python-telegram-bot = "21.1"
 grpcio = "1.62.0"
 protobuf = "4.25.3"

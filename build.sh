@@ -17,6 +17,12 @@ success() { echo -e "${COLOR_SUCCESS}$1${COLOR_RESET}"; }
 ORCHESTRATOR=""
 TELEGRAM_TOKEN=""
 
+ARTIFACT_PATHS=(
+    "services/api-gateway/proto-context"
+    "services/whisper-service/proto-context"
+    "services/telegram-bot/proto-context"
+)
+
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -113,9 +119,34 @@ build_project() {
     success "Build completed"
 }
 
+# Remove all paths listed in ARTIFACT_PATHS.
+clean_artifacts() {
+    for path in "$@"; do
+        if [ -e "$path" ]; then
+            info "Removing $path..."
+            rm -rf "$path" || error "Failed to remove $path"
+        fi
+    done
+    success "Build artifact cleanup complete"
+}
+
+copy_proto_contexts() {
+    local src_proto="proto"
+    if [ ! -d "$src_proto" ]; then
+        error "Source proto directory '$src_proto' does not exist"
+    fi
+    info "Copying proto/ to proto-context/ in all services..."
+    cp -r "$src_proto" "services/api-gateway/proto-context"
+    cp -r "$src_proto" "services/whisper-service/proto-context"
+    cp -r "$src_proto" "services/telegram-bot/proto-context"
+    success "Proto contexts copied successfully"
+}
+
 main() {
     parse_args "$@"
     generate_env
+    clean_artifacts "${ARTIFACT_PATHS[@]}"
+    copy_proto_contexts
     local orchestrator
     orchestrator=$(select_orchestrator)
     build_project "$orchestrator"
