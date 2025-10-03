@@ -8,7 +8,7 @@ Development roadmap
 
 ## Bug Fixes
 
--   [ ] Fix hardcoded service ports in compose.yml
+-   [x] Fix hardcoded service ports in compose.yml
 
 ## Refinements
 

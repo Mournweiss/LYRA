@@ -4,7 +4,7 @@ services:
             context: ./services/api-gateway
             containerfile: Containerfile
         ports:
-            - "50051:50051"
+            - "${API_GATEWAY_PORT:-50051}:${API_GATEWAY_PORT:-50051}"
         volumes:
             - proto:/app/proto:ro
         env_file:
@@ -15,7 +15,7 @@ services:
             context: ./services/whisper-service
             containerfile: Containerfile
         ports:
-            - "50052:50052"
+            - "${WHISPER_SERVICE_PORT:-50052}:${WHISPER_SERVICE_PORT:-50052}"
         volumes:
             - proto:/app/proto:ro
         env_file:
