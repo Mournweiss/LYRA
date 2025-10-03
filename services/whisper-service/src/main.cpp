@@ -1,9 +1,11 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <exception>
 
 #include <grpcpp/grpcpp.h>
 #include "service.grpc.pb.h"
+#include "config.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -28,8 +30,8 @@ class WhisperServiceImpl final : public WhisperService::Service {
     }
 };
 
-void RunServer() {
-    std::string server_address("0.0.0.0:50052");
+void RunServer(const Config& config) {
+    std::string server_address = "0.0.0.0:" + config.service_port;
     WhisperServiceImpl service;
 
     ServerBuilder builder;
@@ -42,6 +44,15 @@ void RunServer() {
 }
 
 int main(int argc, char** argv) {
-    RunServer();
+    try {
+        Config config = Config::Load();
+        RunServer(config);
+    } catch (const ConfigError& e) {
+        std::cerr << "Configuration error: " << e.what() << std::endl;
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << "Startup error: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
