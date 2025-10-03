@@ -6,6 +6,7 @@
 #include <grpcpp/grpcpp.h>
 #include "service.grpc.pb.h"
 #include "config.h"
+#include "errors.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -50,9 +51,12 @@ int main(int argc, char** argv) {
     } catch (const ConfigError& e) {
         std::cerr << "Configuration error: " << e.what() << std::endl;
         return 1;
+    } catch (const BaseError& e) {
+        std::cerr << "Service error: " << e.what() << std::endl;
+        return 1;
     } catch (const std::exception& e) {
         std::cerr << "Startup error: " << e.what() << std::endl;
-        return 1;
+        throw StartupError(e.what());
     }
     return 0;
 }
