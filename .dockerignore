@@ -1,0 +1,64 @@
+# System files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.bak
+*.out
+*.pid
+*.lock
+
+# Git files
+.git
+.gitignore
+
+# IDE files
+.vscode
+.idea
+*.iml
+*.sublime*
+*.code-workspace
+
+# Python cache and venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+ENV
+
+# Go/C++/build/test artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.test
+*.mod
+*.sum
+*.cover
+*.prof
+*.pb.go
+*.pb.cc
+*.pb.h
+*.lcov
+*.gcov
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+coverage
+build
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Project specific
+**/proto-context/
+.env
+.env.*
+!.env.example
