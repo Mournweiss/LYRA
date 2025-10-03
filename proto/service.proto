@@ -4,3 +4,29 @@
 syntax = "proto3";
 
 package lyra;
+
+service WhisperService {
+    // Transcribe audio/video file
+    rpc Transcribe(TranscribeRequest) returns (TranscribeResponse);
+    // Health check endpoint
+    rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message TranscribeRequest {
+    // Audio or video file content (raw bytes)
+    bytes file_content = 1;
+    // File name or metadata (optional)
+    string file_name = 2;
+}
+
+message TranscribeResponse {
+    // Transcribed text
+    string text = 1;
+    // Error message (optional)
+    string error = 2;
+}
+
+message HealthCheckRequest {}
+message HealthCheckResponse {
+    string status = 1;
+}
