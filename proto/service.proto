@@ -1,0 +1,6 @@
+// service.proto
+// gRPC API definitions for LYRA microservices
+
+syntax = "proto3";
+
+package lyra;

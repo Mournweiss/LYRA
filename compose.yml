@@ -1,0 +1,19 @@
+services:
+    api-gateway:
+        build:
+            context: ./services/api-gateway
+            containerfile: Containerfile
+        ports:
+            - "50051:50051"
+
+    whisper-service:
+        build:
+            context: ./services/whisper-service
+            containerfile: Containerfile
+        ports:
+            - "50052:50052"
+
+    telegram-bot:
+        build:
+            context: ./services/telegram-bot
+            containerfile: Containerfile

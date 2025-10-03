@@ -1,0 +1,11 @@
+FROM docker.io/library/golang:1.22-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o api-gateway ./
+
+FROM docker.io/library/alpine:latest
+WORKDIR /app
+COPY --from=builder /app/api-gateway ./api-gateway
+ENTRYPOINT ["./api-gateway"]
+
+EXPOSE 50051
