@@ -7,6 +7,8 @@ services:
             - "50051:50051"
         volumes:
             - proto:/app/proto:ro
+        env_file:
+            - .env
 
     whisper-service:
         build:
@@ -16,6 +18,8 @@ services:
             - "50052:50052"
         volumes:
             - proto:/app/proto:ro
+        env_file:
+            - .env
 
     telegram-bot:
         build:
@@ -23,6 +27,8 @@ services:
             containerfile: Containerfile
         volumes:
             - proto:/app/proto:ro
+        env_file:
+            - .env
 
 volumes:
     proto:
