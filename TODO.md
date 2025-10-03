@@ -12,7 +12,7 @@ Development roadmap
 
 ## Refinements
 
--   [ ] Add centralized error handling in the api-gateway
+-   [x] Add centralized error handling in the api-gateway
 -   [x] Add centralized error handling in the telegram-bot
 -   [ ] Add centralized error handling in the whisper-service
 -   [x] Add centralized config handling in the api-gateway
