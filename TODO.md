@@ -20,4 +20,5 @@ Development roadmap
 -   [ ] Add centralized config handling in the whisper-service
 -   [ ] Replace the file processing stub by accessing whisper.cpp in the whisper-service
 -   [ ] Add validation of uploaded files
--   [ ] Add direct transmission of environment variables to services in compose.yml
+-   [x] Add direct transmission of environment variables to services in compose.yml
+-   [ ] Integrate Redis to manage task statuses and queues
