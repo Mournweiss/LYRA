@@ -4,17 +4,18 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import grpc
 import service_pb2
 import service_pb2_grpc
-from config import Config, ConfigError
+from config import Config
+from errors import ConfigError, GRPCError
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Send me an audio or video file for transcription.")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Processing (stub)...")
-
+    
     try:
         config = context.application.bot_data["config"]
-        
+
         with grpc.insecure_channel(config.API_GATEWAY_ADDRESS) as channel:
             stub = service_pb2_grpc.WhisperServiceStub(channel)
             req = service_pb2.TranscribeRequest(file_content=b"", file_name="stub.wav")
@@ -22,8 +23,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             result = await context.application.run_in_executor(None, resp.result)
             await update.message.reply_text(f"Transcription: {result.text}")
 
-    except Exception as e:
+    except grpc.RpcError as e:
         await update.message.reply_text(f"gRPC error: {e}")
+        raise GRPCError(f"gRPC call failed: {e}")
+
+    except Exception as e:
+        await update.message.reply_text(f"Internal error: {e}")
+        raise
 
 def main():
     logging.basicConfig(level=logging.INFO)

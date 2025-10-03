@@ -1,7 +1,5 @@
 import os
-
-class ConfigError(Exception):
-    pass
+from errors import ConfigError
 
 class Config:
     TELEGRAM_TOKEN: str
@@ -12,12 +10,12 @@ class Config:
         token = os.getenv("TELEGRAM_BOT_TOKEN")
 
         if not token:
-            raise ConfigError("TELEGRAM_BOT_TOKEN environment variable is required.")
+            raise ConfigError("TELEGRAM_BOT_TOKEN environment variable is required")
 
         gateway_addr = os.getenv("API_GATEWAY_ADDRESS")
 
         if not gateway_addr:
-            raise ConfigError("API_GATEWAY_ADDRESS environment variable is required.")
+            raise ConfigError("API_GATEWAY_ADDRESS environment variable is required")
 
         cfg = cls()
         cfg.TELEGRAM_TOKEN = token
