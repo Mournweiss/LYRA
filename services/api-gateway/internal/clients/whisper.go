@@ -6,7 +6,7 @@ import (
 
 	"github.com/lyra/api-gateway/internal"
 	"google.golang.org/grpc"
-	pb "github.com/lyra/api-gateway/internal"
+   	pb "github.com/lyra/api-gateway/internal/pb"
 )
 
 func ProxyTranscribe(ctx context.Context, req *pb.TranscribeRequest, serviceAddr string) (*pb.TranscribeResponse, error) {
@@ -22,3 +22,4 @@ func ProxyTranscribe(ctx context.Context, req *pb.TranscribeRequest, serviceAddr
 	client := pb.NewWhisperServiceClient(conn)
 	return client.Transcribe(ctx, req)
 }
+

@@ -4,11 +4,10 @@ import (
 	"context"
 	"log"
 	"net"
-	"os"
 
 	"github.com/lyra/api-gateway/internal"
 	"github.com/lyra/api-gateway/internal/clients"
-	pb "github.com/lyra/api-gateway/internal"
+   	pb "github.com/lyra/api-gateway/internal/pb"
 	"google.golang.org/grpc"
 )
 

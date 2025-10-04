@@ -6,7 +6,7 @@ RUN apk add --no-cache build-base cmake git protobuf protobuf-dev grpc-dev
 
 COPY . .
 
-RUN protoc -I./proto --cpp_out=./include --grpc_out=./include --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin ./proto/service.proto
+RUN protoc -I./proto-context --cpp_out=./include --grpc_out=./include --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin ./proto-context/service.proto
 
 RUN cmake . && make
 

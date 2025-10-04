@@ -7,7 +7,9 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
 
 COPY . .
 
-RUN protoc -I./proto --go_out=./internal --go-grpc_out=./internal ./proto/service.proto
+RUN go mod tidy
+
+RUN protoc -I./proto-context --go_out=./ --go-grpc_out=./ ./proto-context/service.proto
 
 RUN go build -o api-gateway ./cmd
 

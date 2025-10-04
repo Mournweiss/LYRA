@@ -16,18 +16,23 @@ include_directories(include)
 set(PROTO_FILE ../../proto/service.proto)
 
 # Generate sources
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILE})
-grpc_generate_cpp(GRPC_SRCS GRPC_HDRS ${PROTO_FILE})
-
 add_executable(whisper_grpc_server
     src/main.cpp
-    ${PROTO_SRCS}
-    ${PROTO_HDRS}
-    ${GRPC_SRCS}
-    ${GRPC_HDRS}
+    src/config.cpp # Added to resolve undefined reference to Config::Load()
+    include/service.pb.cc
+    include/service.grpc.pb.cc
 )
+
+find_library(ABSL_LOG_INTERNAL_CHECK_OP NAMES absl_log_internal_check_op)
+find_library(ABSL_STRINGS NAMES absl_strings)
+find_library(ABSL_BASE NAMES absl_base)
+find_library(ABSL_LOG_INTERNAL_MESSAGE NAMES absl_log_internal_message)
 
 target_link_libraries(whisper_grpc_server
     gRPC::grpc++
     protobuf::libprotobuf
+    ${ABSL_LOG_INTERNAL_CHECK_OP}
+    ${ABSL_STRINGS}
+    ${ABSL_BASE}
+    ${ABSL_LOG_INTERNAL_MESSAGE}
 )

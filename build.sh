@@ -114,9 +114,9 @@ generate_env() {
 # Build project via compose.yml
 build_project() {
     local compose_cmd="$1"
-    info "Building project using $compose_cmd..."
-    $compose_cmd -f compose.yml build
-    success "Build completed"
+    info "Building and starting project using $compose_cmd..."
+    $compose_cmd -f compose.yml up -d --build
+    success "Build and startup completed"
 }
 
 # Remove all paths listed in ARTIFACT_PATHS.

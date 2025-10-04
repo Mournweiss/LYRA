@@ -5,6 +5,8 @@ syntax = "proto3";
 
 package lyra;
 
+option go_package = "internal/pb";
+
 service WhisperService {
     // Transcribe audio/video file
     rpc Transcribe(TranscribeRequest) returns (TranscribeResponse);
