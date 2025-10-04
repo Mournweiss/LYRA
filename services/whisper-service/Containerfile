@@ -1,18 +1,26 @@
-FROM docker.io/library/alpine:3.19 as builder
+FROM ghcr.io/ggml-org/whisper.cpp:main-cuda-7849aff7a2e1f4234aa31b01a1870906d5431959 AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache build-base cmake git protobuf protobuf-dev grpc-dev
+RUN apt-get update && \
+    apt-get install -y build-essential cmake git protobuf-compiler libprotobuf-dev libprotoc-dev libabsl-dev grpc++-tools pkg-config libssl-dev
+
+RUN git clone -b v1.48.0 https://github.com/grpc/grpc /grpc && \
+    cd /grpc && git submodule update --init && \
+    mkdir -p cmake/build && cd cmake/build && \
+    cmake ../.. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF && \
+    make -j$(nproc) && make install
 
 COPY . .
 
-RUN protoc -I./proto-context --cpp_out=./include --grpc_out=./include --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin ./proto-context/service.proto
-
-RUN cmake . && make
+RUN protoc -I./proto-context --cpp_out=./include --grpc_out=./include --plugin=protoc-gen-grpc=$(which grpc_cpp_plugin) ./proto-context/service.proto && \
+    cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/cmake/grpc . && make
 
 FROM ghcr.io/ggml-org/whisper.cpp:main-cuda-7849aff7a2e1f4234aa31b01a1870906d5431959
-WORKDIR /app
-COPY --from=builder /app/whisper_grpc_server ./whisper_grpc_server
-ENTRYPOINT ["./whisper_grpc_server"]
 
+WORKDIR /app
+
+COPY --from=builder /app/whisper_grpc_server ./whisper_grpc_server
+
+ENTRYPOINT ["./whisper_grpc_server"]
 EXPOSE 50052
