@@ -12,6 +12,10 @@ service WhisperService {
     rpc Transcribe(TranscribeRequest) returns (TranscribeResponse);
     // Health check endpoint
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+    // Create asynchronous transcription task
+    rpc CreateTranscriptionTask(TranscribeRequest) returns (CreateTaskResponse);
+    // Get status/result of asynchronous task
+    rpc GetTaskStatus(GetTaskStatusRequest) returns (GetTaskStatusResponse);
 }
 
 message TranscribeRequest {
@@ -31,4 +35,24 @@ message TranscribeResponse {
 message HealthCheckRequest {}
 message HealthCheckResponse {
     string status = 1;
+}
+
+// Response for async task creation
+message CreateTaskResponse {
+    string task_id = 1;
+    string error = 2;
+}
+
+// Request for task status
+message GetTaskStatusRequest {
+    string task_id = 1;
+}
+
+// Response for task status
+message GetTaskStatusResponse {
+    string status = 1;
+    string result = 2;
+    string error = 3;
+    int64 created_at = 4;
+    int64 updated_at = 5;
 }

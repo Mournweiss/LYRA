@@ -25,3 +25,27 @@ type UpstreamError struct {
 func UpstreamErrorf(msg string, args ...interface{}) *UpstreamError {
 	return &UpstreamError{GatewayError{Msg: fmt.Sprintf(msg, args...)}}
 }
+
+type HandlerError struct {
+	GatewayError
+	Code string
+}
+
+func HandlerErrorf(code, msg string, args ...interface{}) *HandlerError {
+	return &HandlerError{
+		GatewayError: GatewayError{Msg: fmt.Sprintf(msg, args...)},
+		Code:        code,
+	}
+}
+
+type ValidationError struct {
+	GatewayError
+	Field string
+}
+
+func ValidationErrorf(field, msg string, args ...interface{}) *ValidationError {
+	return &ValidationError{
+		GatewayError: GatewayError{Msg: fmt.Sprintf(msg, args...)},
+		Field:       field,
+	}
+}

@@ -5,6 +5,6 @@
 class Config {
 public:
     std::string service_port;
-    std::string service_domain;
+    std::string service_host;
     static Config Load();
 };
