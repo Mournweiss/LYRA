@@ -10,12 +10,13 @@ import (
     pb "github.com/lyra/api-gateway/internal/pb"
 )
 
-func CreateTranscriptionTaskHandler(ctx context.Context, req *pb.TranscribeRequest, redisClient *clients.RedisClient) (*pb.CreateTaskResponse, error) {
-    if req == nil || len(req.FileContent) == 0 {
-        return &pb.CreateTaskResponse{TaskId: "", Error: "Audio or video file content is required"}, internal.ValidationErrorf("file_content", "Audio or video file content is required")
+func CreateTranscriptionTaskHandler(ctx context.Context, req *pb.CreateTranscriptionTaskRequest, redisClient *clients.RedisClient) (*pb.CreateTaskResponse, error) {
+    if req == nil || req.TaskId == "" || req.FileKey == "" {
+        return &pb.CreateTaskResponse{TaskId: "", Error: "task_id and file_key are required"}, internal.ValidationErrorf("task_id|file_key", "task_id and file_key are required")
     }
-    taskID := uuid.NewString()
-    task := internal.NewTask(taskID)
+    taskID := req.TaskId
+    fileKey := req.FileKey
+    task := internal.NewTask(taskID, fileKey)
     err := redisClient.SaveTask(ctx, task)
     if err != nil {
         return &pb.CreateTaskResponse{TaskId: "", Error: "Failed to create task"}, internal.HandlerErrorf("REDIS_ERROR", "Failed to save task in Redis: %v", err)
@@ -50,23 +51,24 @@ func StartTaskWorker(ctx context.Context, redisClient *clients.RedisClient, whis
         for {
             select {
             case <-ctx.Done():
-                log.Println("Task scanner stopped")
+                log.Println("[Worker] Task scanner stopped")
                 close(taskChan)
                 return
             default:
                 keys, err := redisClient.Client().Keys(ctx, "task:*").Result()
                 if err != nil {
-                    log.Printf("Failed to scan Redis: %v", err)
+                    log.Printf("[Worker] Failed to scan Redis: %v", err)
                     continue
                 }
                 for _, key := range keys {
-                    task, err := redisClient.GetTask(ctx, key[len("task:"):])
+                    taskID := key[len("task:"):]
+                    task, err := redisClient.GetTask(ctx, taskID)
                     if err != nil || task == nil {
                         continue
                     }
                     if task.Status == internal.StatusPending {
                         select {
-                        case taskChan <- task.ID:
+                        case taskChan <- task.TaskID:
                         case <-ctx.Done():
                             close(taskChan)
                             return
@@ -98,18 +100,18 @@ func processTask(ctx context.Context, redisClient *clients.RedisClient, whisperS
         log.Printf("[Worker-%d] Failed to fetch task %s: %v", workerID, taskID, err)
         return
     }
-    log.Printf("[Worker-%d] Processing task %s", workerID, task.ID)
-    _ = redisClient.UpdateTaskStatus(ctx, task.ID, internal.StatusRunning, "", "")
+    log.Printf("[Worker-%d] Processing task %s", workerID, task.TaskID)
+    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, internal.StatusRunning, "", "")
     req := &pb.TranscribeRequest{
-        FileContent: []byte(task.Result),
-        FileName:    "async-task.wav",
+        TaskId:  task.TaskID,
+        FileKey: task.FileKey,
     }
     resp, err := clients.ProxyTranscribe(ctx, req, whisperServiceAddr)
     if err != nil {
-        log.Printf("[Worker-%d] Transcription failed for task %s: %v", workerID, task.ID, err)
-        _ = redisClient.UpdateTaskStatus(ctx, task.ID, internal.StatusError, "", err.Error())
+        log.Printf("[Worker-%d] Transcription failed for task %s: %v", workerID, task.TaskID, err)
+        _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, internal.StatusError, "", err.Error())
         return
     }
-    _ = redisClient.UpdateTaskStatus(ctx, task.ID, internal.StatusSuccess, resp.Text, resp.Error)
-    log.Printf("[Worker-%d] Task %s completed", workerID, task.ID)
+    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, internal.StatusSuccess, resp.Text, resp.Error)
+    log.Printf("[Worker-%d] Task %s completed", workerID, task.TaskID)
 }

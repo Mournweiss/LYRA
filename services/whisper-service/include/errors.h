@@ -21,3 +21,18 @@ class StartupError : public BaseError {
 public:
     explicit StartupError(const std::string& msg) : BaseError(msg) {}
 };
+
+class MinioError : public BaseError {
+public:
+    explicit MinioError(const std::string& msg) : BaseError(msg) {}
+};
+
+class WhisperError : public BaseError {
+public:
+    explicit WhisperError(const std::string& msg) : BaseError(msg) {}
+};
+
+class TaskError : public BaseError {
+public:
+    explicit TaskError(const std::string& msg) : BaseError(msg) {}
+};

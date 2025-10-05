@@ -32,3 +32,8 @@ target_link_libraries(whisper_grpc_server
     ${ABSL_STRINGS}
     ${ABSL_BASE}
 )
+
+find_package(minio-cpp REQUIRED)
+
+target_include_directories(whisper_grpc_server PRIVATE include)
+target_link_libraries(whisper_grpc_server PRIVATE grpc++ protobuf minio-cpp)

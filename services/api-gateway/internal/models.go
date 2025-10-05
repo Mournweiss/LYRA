@@ -12,7 +12,8 @@ const (
 )
 
 type Task struct {
-    ID        string     `json:"id"`
+    TaskID    string     `json:"task_id"`
+    FileKey   string     `json:"file_key"`
     Status    TaskStatus `json:"status"`
     Result    string     `json:"result,omitempty"`
     Error     string     `json:"error,omitempty"`
@@ -20,10 +21,11 @@ type Task struct {
     UpdatedAt int64      `json:"updated_at"`
 }
 
-func NewTask(id string) *Task {
+func NewTask(taskID, fileKey string) *Task {
     now := time.Now().Unix()
     return &Task{
-        ID:        id,
+        TaskID:    taskID,
+        FileKey:   fileKey,
         Status:    StatusPending,
         CreatedAt: now,
         UpdatedAt: now,
