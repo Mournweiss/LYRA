@@ -23,3 +23,4 @@ Development roadmap
 -   [x] Add direct transmission of environment variables to services in compose.yml
 -   [ ] Integrate Redis to manage task statuses and queues
 -   [x] Add default settings in config scripts
+-   [ ] Integrate MinIO for service-wide storage of audio and video files
