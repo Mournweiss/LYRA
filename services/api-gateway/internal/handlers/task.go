@@ -3,34 +3,34 @@ package handlers
 import (
     "context"
     "log"
-    "time"
-    "github.com/google/uuid"
-    "github.com/lyra/api-gateway/internal"
+    "github.com/lyra/api-gateway/internal/models"
     "github.com/lyra/api-gateway/internal/clients"
+    "github.com/lyra/api-gateway/internal/errors"
     pb "github.com/lyra/api-gateway/internal/pb"
 )
 
 func CreateTranscriptionTaskHandler(ctx context.Context, req *pb.CreateTranscriptionTaskRequest, redisClient *clients.RedisClient) (*pb.CreateTaskResponse, error) {
     if req == nil || req.TaskId == "" || req.FileKey == "" {
-        return &pb.CreateTaskResponse{TaskId: "", Error: "task_id and file_key are required"}, internal.ValidationErrorf("task_id|file_key", "task_id and file_key are required")
+        return &pb.CreateTaskResponse{TaskId: "", Error: "task_id and file_key are required"}, errors.ValidationErrorf("task_id|file_key", "task_id and file_key are required")
     }
+    // Use client-provided task_id and file_key
     taskID := req.TaskId
     fileKey := req.FileKey
-    task := internal.NewTask(taskID, fileKey)
+    task := models.NewTask(taskID, fileKey)
     err := redisClient.SaveTask(ctx, task)
     if err != nil {
-        return &pb.CreateTaskResponse{TaskId: "", Error: "Failed to create task"}, internal.HandlerErrorf("REDIS_ERROR", "Failed to save task in Redis: %v", err)
+        return &pb.CreateTaskResponse{TaskId: "", Error: "Failed to create task"}, errors.HandlerErrorf("REDIS_ERROR", "Failed to save task in Redis: %v", err)
     }
     return &pb.CreateTaskResponse{TaskId: taskID, Error: ""}, nil
 }
 
 func GetTaskStatusHandler(ctx context.Context, req *pb.GetTaskStatusRequest, redisClient *clients.RedisClient) (*pb.GetTaskStatusResponse, error) {
     if req == nil || req.TaskId == "" {
-        return &pb.GetTaskStatusResponse{Status: "ERROR", Error: "Task ID is required"}, internal.ValidationErrorf("task_id", "Task ID is required")
+        return &pb.GetTaskStatusResponse{Status: "ERROR", Error: "Task ID is required"}, errors.ValidationErrorf("task_id", "Task ID is required")
     }
     task, err := redisClient.GetTask(ctx, req.TaskId)
     if err != nil {
-        return &pb.GetTaskStatusResponse{Status: "ERROR", Error: "Failed to get task status"}, internal.HandlerErrorf("REDIS_ERROR", "Failed to get task from Redis: %v", err)
+        return &pb.GetTaskStatusResponse{Status: "ERROR", Error: "Failed to get task status"}, errors.HandlerErrorf("REDIS_ERROR", "Failed to get task from Redis: %v", err)
     }
     if task == nil {
         return &pb.GetTaskStatusResponse{Status: "NOT_FOUND", Error: "Task not found"}, nil
@@ -55,24 +55,17 @@ func StartTaskWorker(ctx context.Context, redisClient *clients.RedisClient, whis
                 close(taskChan)
                 return
             default:
-                keys, err := redisClient.Client().Keys(ctx, "task:*").Result()
+                taskIDs, err := redisClient.ListPendingTaskIDs(ctx)
                 if err != nil {
                     log.Printf("[Worker] Failed to scan Redis: %v", err)
                     continue
                 }
-                for _, key := range keys {
-                    taskID := key[len("task:"):]
-                    task, err := redisClient.GetTask(ctx, taskID)
-                    if err != nil || task == nil {
-                        continue
-                    }
-                    if task.Status == internal.StatusPending {
-                        select {
-                        case taskChan <- task.TaskID:
-                        case <-ctx.Done():
-                            close(taskChan)
-                            return
-                        }
+                for _, taskID := range taskIDs {
+                    select {
+                    case taskChan <- taskID:
+                    case <-ctx.Done():
+                        close(taskChan)
+                        return
                     }
                 }
             }
@@ -101,7 +94,7 @@ func processTask(ctx context.Context, redisClient *clients.RedisClient, whisperS
         return
     }
     log.Printf("[Worker-%d] Processing task %s", workerID, task.TaskID)
-    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, internal.StatusRunning, "", "")
+    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, models.StatusRunning, "", "")
     req := &pb.TranscribeRequest{
         TaskId:  task.TaskID,
         FileKey: task.FileKey,
@@ -109,9 +102,9 @@ func processTask(ctx context.Context, redisClient *clients.RedisClient, whisperS
     resp, err := clients.ProxyTranscribe(ctx, req, whisperServiceAddr)
     if err != nil {
         log.Printf("[Worker-%d] Transcription failed for task %s: %v", workerID, task.TaskID, err)
-        _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, internal.StatusError, "", err.Error())
+        _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, models.StatusError, "", err.Error())
         return
     }
-    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, internal.StatusSuccess, resp.Text, resp.Error)
+    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, models.StatusSuccess, resp.Text, resp.Error)
     log.Printf("[Worker-%d] Task %s completed", workerID, task.TaskID)
 }

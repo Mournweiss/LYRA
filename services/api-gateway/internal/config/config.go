@@ -1,9 +1,10 @@
-package internal
+package config
 
 import (
 	"os"
 	"fmt"
 	"strconv"
+	"github.com/lyra/api-gateway/internal/errors"
 )
 
 type Config struct {
@@ -30,36 +31,30 @@ func LoadConfig() (*Config, error) {
 
 	concurrencyStr := getenvDefault("WORKER_CONCURRENCY", "4")
 	concurrency, err := strconv.Atoi(concurrencyStr)
-
 	if err != nil || concurrency < 1 {
 		concurrency = 4
 	}
-
 	cfg.WorkerConcurrency = concurrency
 	cfg.GatewayAddress = fmt.Sprintf("%s:%s", cfg.GatewayHost, cfg.GatewayPort)
 	cfg.WhisperServiceAddr = fmt.Sprintf("%s:%s", cfg.WhisperServiceHost, cfg.WhisperServicePort)
 
 	if cfg.GatewayPort == "" {
-		return nil, ConfigErrorf("API_GATEWAY_PORT environment variable is required")
+		return nil, errors.ConfigErrorf("API_GATEWAY_PORT environment variable is required")
 	}
-
 	if cfg.GatewayHost == "" {
-		return nil, ConfigErrorf("API_GATEWAY_HOST environment variable is required")
+		return nil, errors.ConfigErrorf("API_GATEWAY_HOST environment variable is required")
 	}
 	if cfg.WhisperServicePort == "" {
-		return nil, ConfigErrorf("WHISPER_SERVICE_PORT environment variable is required")
+		return nil, errors.ConfigErrorf("WHISPER_SERVICE_PORT environment variable is required")
 	}
-
 	if cfg.WhisperServiceHost == "" {
-		return nil, ConfigErrorf("WHISPER_SERVICE_HOST environment variable is required")
+		return nil, errors.ConfigErrorf("WHISPER_SERVICE_HOST environment variable is required")
 	}
-
 	if cfg.RedisHost == "" {
-		return nil, ConfigErrorf("REDIS_HOST environment variable is required")
+		return nil, errors.ConfigErrorf("REDIS_HOST environment variable is required")
 	}
-
 	if cfg.RedisPort == "" {
-		return nil, ConfigErrorf("REDIS_PORT environment variable is required")
+		return nil, errors.ConfigErrorf("REDIS_PORT environment variable is required")
 	}
 
 	return cfg, nil
@@ -67,10 +62,8 @@ func LoadConfig() (*Config, error) {
 
 func getenvDefault(key, def string) string {
 	val := os.Getenv(key)
-	
 	if val == "" {
 		return def
 	}
-
 	return val
 }

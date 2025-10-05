@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/lyra/api-gateway/internal/clients"
 	handlers "github.com/lyra/api-gateway/internal/handlers"
 	pb "github.com/lyra/api-gateway/internal/pb"
+	"github.com/lyra/api-gateway/internal/config"
 	"google.golang.org/grpc"
 )
 
@@ -25,7 +26,7 @@ func (s *Server) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*
 	return handlers.HealthCheckHandler(ctx, req)
 }
 
-func (s *Server) CreateTranscriptionTask(ctx context.Context, req *pb.TranscribeRequest) (*pb.CreateTaskResponse, error) {
+func (s *Server) CreateTranscriptionTask(ctx context.Context, req *pb.CreateTranscriptionTaskRequest) (*pb.CreateTaskResponse, error) {
 	return handlers.CreateTranscriptionTaskHandler(ctx, req, s.redisClient)
 }
 
@@ -33,7 +34,7 @@ func (s *Server) GetTaskStatus(ctx context.Context, req *pb.GetTaskStatusRequest
 	return handlers.GetTaskStatusHandler(ctx, req, s.redisClient)
 }
 
-func StartServer(cfg *Config) {
+func StartServer(cfg *config.Config) {
 	log.Printf("Starting API Gateway on port %s (address: %s), whisper-service: %s", cfg.GatewayPort, cfg.GatewayAddress, cfg.WhisperServiceAddr)
 
 	redisClient := clients.NewRedisClient(cfg.RedisHost, cfg.RedisPort)
