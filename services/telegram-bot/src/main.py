@@ -2,6 +2,7 @@ import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import grpc
+import asyncio
 import service_pb2
 import service_pb2_grpc
 from config import Config
@@ -20,7 +21,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             stub = service_pb2_grpc.WhisperServiceStub(channel)
             req = service_pb2.TranscribeRequest(file_content=b"", file_name="stub.wav")
             resp = stub.Transcribe.future(req)
-            result = await context.application.run_in_executor(None, resp.result)
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(None, resp.result)
             await update.message.reply_text(f"Transcription: {result.text}")
 
     except grpc.RpcError as e:

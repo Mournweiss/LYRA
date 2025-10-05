@@ -21,6 +21,8 @@ services:
         build:
             context: ./services/telegram-bot
             containerfile: Containerfile
+        ports:
+            - "${TELEGRAM_BOT_PORT:-50053}:${TELEGRAM_BOT_PORT:-50053}"
         env_file:
             - .env
 
