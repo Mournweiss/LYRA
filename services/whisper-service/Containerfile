@@ -23,4 +23,3 @@ WORKDIR /app
 COPY --from=builder /app/whisper_grpc_server ./whisper_grpc_server
 
 ENTRYPOINT ["./whisper_grpc_server"]
-EXPOSE 50052

@@ -18,7 +18,7 @@ set(PROTO_FILE ../../proto/service.proto)
 # Generate sources
 add_executable(whisper_grpc_server
     src/main.cpp
-    src/config.cpp # Added to resolve undefined reference to Config::Load()
+    src/config.cpp
     include/service.pb.cc
     include/service.grpc.pb.cc
 )

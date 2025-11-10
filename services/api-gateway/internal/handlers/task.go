@@ -13,7 +13,6 @@ func CreateTranscriptionTaskHandler(ctx context.Context, req *pb.CreateTranscrip
     if req == nil || req.TaskId == "" || req.FileKey == "" {
         return &pb.CreateTaskResponse{TaskId: "", Error: "task_id and file_key are required"}, errors.ValidationErrorf("task_id|file_key", "task_id and file_key are required")
     }
-    // Use client-provided task_id and file_key
     taskID := req.TaskId
     fileKey := req.FileKey
     task := models.NewTask(taskID, fileKey)
