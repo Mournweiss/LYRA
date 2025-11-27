@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # ANSI color codes
-COLOR_INFO="\033[0m"       # White (default)
+COLOR_INFO="\033[0m"       # White
 COLOR_WARN="\033[1;33m"    # Yellow
 COLOR_ERROR="\033[1;31m"   # Red
 COLOR_SUCCESS="\033[1;32m" # Green
@@ -46,7 +46,6 @@ parse_args() {
     done
 }
 
-# Check if orchestrator is available
 is_orchestrator_available() {
     case "$1" in
         podman-compose)
@@ -64,7 +63,6 @@ is_orchestrator_available() {
     esac
 }
 
-# Select and validate orchestrator
 select_orchestrator() {
     local candidates=("podman-compose" "docker-compose" "docker compose")
     if [ -n "$ORCHESTRATOR" ]; then
@@ -85,7 +83,6 @@ select_orchestrator() {
     fi
 }
 
-# Generate .env from .env.example
 generate_env() {
     local env_file=".env"
     local example_file=".env.example"
@@ -111,7 +108,6 @@ generate_env() {
     fi
 }
 
-# Build project via compose.yml
 build_project() {
     local compose_cmd="$1"
     info "Building and starting project using $compose_cmd..."
@@ -119,7 +115,6 @@ build_project() {
     success "Build and startup completed"
 }
 
-# Remove all paths listed in ARTIFACT_PATHS.
 clean_artifacts() {
     for path in "$@"; do
         if [ -e "$path" ]; then

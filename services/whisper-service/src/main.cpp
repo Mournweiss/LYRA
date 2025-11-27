@@ -2,7 +2,8 @@
 #include <exception>
 #include "config.h"
 #include "errors.h"
-#include "server.cpp"
+
+void RunServer(const Config& config);
 
 int main(int argc, char** argv) {
     try {

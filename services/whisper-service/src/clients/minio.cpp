@@ -1,5 +1,5 @@
 #include "clients/minio.h"
-#include <minio/minio.hpp>
+#include <miniocpp/client.h>
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -7,14 +7,14 @@
 
 bool download_file_from_minio(minio::s3::Client& minio_client, const std::string& bucket, const std::string& file_key, const std::string& local_path) {
     try {
-        minio::s3::GetObjectArgs args = minio::s3::GetObjectArgs().bucket(bucket).object(file_key);
-        std::ofstream ofs(local_path, std::ios::binary);
-        minio::s3::GetObjectResponse get_resp = minio_client.GetObject(args, [&ofs](const char* data, size_t size) {
-            ofs.write(data, size);
-        });
-        ofs.close();
-        if (!get_resp) {
-            throw MinioError("Failed to download file from MinIO: " + get_resp.Error().String());
+        minio::s3::DownloadObjectArgs args;
+        args.bucket = bucket;
+        args.object = file_key;
+        args.filename = local_path;
+
+        minio::s3::DownloadObjectResponse resp = minio_client.DownloadObject(args);
+        if (!resp) {
+            throw MinioError("Failed to download file from MinIO: " + resp.Error().String());
         }
         return true;
     } catch (const std::exception& e) {

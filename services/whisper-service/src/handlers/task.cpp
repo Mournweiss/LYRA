@@ -1,6 +1,6 @@
 #include "handlers/task.h"
 #include <string>
-#include <minio/minio.hpp>
+#include <miniocpp/client.h>
 #include "clients/minio.h"
 #include "clients/whisper.h"
 #include "errors.h"

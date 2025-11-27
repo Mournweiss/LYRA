@@ -5,7 +5,7 @@
 #include "service.grpc.pb.h"
 #include "config.h"
 #include "errors.h"
-#include <minio/minio.hpp>
+#include <miniocpp/client.h>
 #include "clients/minio.h"
 #include "clients/whisper.h"
 #include "handlers/task.h"
@@ -20,13 +20,15 @@ using lyra::HealthCheckRequest;
 using lyra::HealthCheckResponse;
 
 class WhisperServiceImpl final : public WhisperService::Service {
+private:
+    minio::s3::BaseUrl base_url_;
+    std::unique_ptr<minio::creds::StaticProvider> provider_;
+
 public:
     WhisperServiceImpl(const Config& config)
-        : minio_client_(minio::s3::Client(
-            config.minio_host + ":" + config.minio_port,
-            config.minio_access_key,
-            config.minio_secret_key,
-            false)),
+        : base_url_(config.minio_host + ":" + config.minio_port, false),
+          provider_(std::make_unique<minio::creds::StaticProvider>(config.minio_access_key, config.minio_secret_key)),
+          minio_client_(base_url_, provider_.get()),
           minio_bucket_(config.minio_bucket) {}
 
     grpc::Status Transcribe(grpc::ServerContext* context, const TranscribeRequest* request, TranscribeResponse* response) override {

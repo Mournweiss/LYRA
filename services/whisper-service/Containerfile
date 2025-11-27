@@ -2,19 +2,17 @@ FROM ghcr.io/ggml-org/whisper.cpp:main-cuda-7849aff7a2e1f4234aa31b01a1870906d543
 
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y build-essential cmake git protobuf-compiler libprotobuf-dev libprotoc-dev libabsl-dev grpc++-tools pkg-config libssl-dev
+COPY entrypoint.sh build-functions.sh ./
 
-RUN git clone -b v1.48.0 https://github.com/grpc/grpc /grpc && \
-    cd /grpc && git submodule update --init && \
-    mkdir -p cmake/build && cd cmake/build && \
-    cmake ../.. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF && \
-    make -j$(nproc) && make install
+RUN ./entrypoint.sh install_deps
+RUN ./entrypoint.sh build_libs
+RUN ./entrypoint.sh create_configs
+RUN ./entrypoint.sh build_grpc
 
 COPY . .
 
-RUN protoc -I./proto-context --cpp_out=./include --grpc_out=./include --plugin=protoc-gen-grpc=$(which grpc_cpp_plugin) ./proto-context/service.proto && \
-    cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/cmake/grpc . && make
+RUN ./entrypoint.sh build_minio
+RUN ./entrypoint.sh build_app
 
 FROM ghcr.io/ggml-org/whisper.cpp:main-cuda-7849aff7a2e1f4234aa31b01a1870906d5431959
 
