@@ -7,13 +7,15 @@ authors = ["Maxim Selin <selinmax05@mail.ru>"]
 [tool.poetry.dependencies]
 python = "^3.11"
 python-telegram-bot = "22.5"
-grpcio = "1.62.0"
-protobuf = "4.25.3"
+grpcio = "1.76.0"
+protobuf = "6.33.1"
+minio = "7.2.20"
+grpcio-tools = "1.76.0"
 
 [tool.poetry.group.dev.dependencies]
-grpcio-tools = "1.62.0"
-pytest = "8.2.0"
+grpcio-tools = "1.76.0"
+pytest = "9.0.1"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.5.0"]
 build-backend = "poetry.core.masonry.api"
