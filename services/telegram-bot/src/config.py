@@ -12,6 +12,7 @@ class Config:
     MINIO_ACCESS_KEY: str
     MINIO_SECRET_KEY: str
     MINIO_BUCKET: str
+    MINIO_REGION: str
     MINIO_ENDPOINT: str
 
     @classmethod
@@ -25,6 +26,7 @@ class Config:
         minio_access_key = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
         minio_secret_key = os.getenv("MINIO_SECRET_KEY", "minioadmin123")
         minio_bucket = os.getenv("MINIO_BUCKET", "lyra-media")
+        minio_region = os.getenv("MINIO_REGION", "us-east-1")
 
         if not token or token == "your-telegram-bot-token":
             raise ConfigError("TELEGRAM_BOT_TOKEN environment variable is required or must be set in .env")
@@ -46,7 +48,7 @@ class Config:
 
         if not minio_secret_key:
             raise ConfigError("MINIO_SECRET_KEY environment variable is required or must be set in .env")
-            
+
         if not minio_bucket:
             raise ConfigError("MINIO_BUCKET environment variable is required or must be set in .env")
 
@@ -61,5 +63,6 @@ class Config:
         cfg.MINIO_ACCESS_KEY = minio_access_key
         cfg.MINIO_SECRET_KEY = minio_secret_key
         cfg.MINIO_BUCKET = minio_bucket
+        cfg.MINIO_REGION = minio_region
         cfg.MINIO_ENDPOINT = f"{minio_host}:{minio_port}"
         return cfg

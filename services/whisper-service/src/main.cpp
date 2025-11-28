@@ -21,12 +21,15 @@ int main(int argc, char** argv) {
     } catch (const TaskError& e) {
         std::cerr << "Task error: " << e.what() << std::endl;
         return 1;
+    } catch (const StartupError& e) {
+        std::cerr << "Startup error: " << e.what() << std::endl;
+        return 1;
     } catch (const BaseError& e) {
         std::cerr << "Service error: " << e.what() << std::endl;
         return 1;
     } catch (const std::exception& e) {
-        std::cerr << "Startup error: " << e.what() << std::endl;
-        throw StartupError(e.what());
+        std::cerr << "Unexpected error: " << e.what() << std::endl;
+        return 1;
     }
     return 0;
 }

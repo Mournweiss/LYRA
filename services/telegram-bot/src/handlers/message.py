@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 from telegram import Update
 from telegram.ext import ContextTypes
 from clients.minio import get_minio_client, upload_file
@@ -24,12 +25,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             file = await update.message.audio.get_file()
             original_filename = update.message.audio.file_name
 
+        elif update.message.voice:
+            file = await update.message.voice.get_file()
+            original_filename = f"voice_{int(time.time())}.ogg"
+
         elif update.message.video:
             file = await update.message.video.get_file()
             original_filename = update.message.video.file_name
-            
+
         else:
-            raise ValidationError("Please send an audio, video, or document file.")
+            raise ValidationError("Please send an audio, video, voice message, or document file.")
 
         local_path = f"/tmp/{original_filename}"
         await file.download_to_drive(local_path)

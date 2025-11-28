@@ -7,6 +7,11 @@ services:
             - "${API_GATEWAY_PORT:-50051}:${API_GATEWAY_PORT:-50051}"
         env_file:
             - .env
+        depends_on:
+            redis:
+                condition: service_started
+            minio:
+                condition: service_healthy
 
     whisper-service:
         build:
@@ -16,6 +21,9 @@ services:
             - "${WHISPER_SERVICE_PORT:-50052}:${WHISPER_SERVICE_PORT:-50052}"
         env_file:
             - .env
+        depends_on:
+            minio:
+                condition: service_healthy
 
     telegram-bot:
         build:
@@ -25,6 +33,9 @@ services:
             - "${TELEGRAM_BOT_PORT:-50053}:${TELEGRAM_BOT_PORT:-50053}"
         env_file:
             - .env
+        depends_on:
+            minio:
+                condition: service_healthy
 
     redis:
         image: docker.io/library/redis:8.2.2-alpine
@@ -37,14 +48,23 @@ services:
     minio:
         image: docker.io/minio/minio:latest
         ports:
-            - "${MINIO_PORT}:${MINIO_PORT}"
-            - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_PORT}"
+            - "${MINIO_PORT:-9000}:${MINIO_PORT:-9000}"
+            - "${MINIO_CONSOLE_PORT:-9001}:${MINIO_CONSOLE_PORT:-9001}"
         environment:
-            MINIO_ROOT_USER: minioadmin
-            MINIO_ROOT_PASSWORD: minioadmin
-        command: server --console-address ":${MINIO_CONSOLE_PORT}" /data
+            MINIO_ROOT_USER: "${MINIO_ROOT_USER:-minioadmin}"
+            MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-minioadmin123}"
+            MINIO_REGION: "${MINIO_REGION:-us-east-1}"
+            MINIO_BROWSER: "on"
+        command: server --console-address ":${MINIO_CONSOLE_PORT:-9001}" /data
         volumes:
             - minio-data:/data
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:${MINIO_PORT:-9000}/minio/health/live"]
+            interval: 15s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
 
 volumes:
     redis-data:

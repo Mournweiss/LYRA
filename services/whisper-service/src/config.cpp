@@ -18,11 +18,13 @@ Config Config::Load() {
     const char* minio_access_key = std::getenv("MINIO_ACCESS_KEY");
     const char* minio_secret_key = std::getenv("MINIO_SECRET_KEY");
     const char* minio_bucket = std::getenv("MINIO_BUCKET");
+    const char* minio_region = std::getenv("MINIO_REGION");
     cfg.minio_host = minio_host ? minio_host : "minio";
     cfg.minio_port = minio_port ? minio_port : "9000";
     cfg.minio_access_key = minio_access_key ? minio_access_key : "minioadmin";
     cfg.minio_secret_key = minio_secret_key ? minio_secret_key : "minioadmin123";
     cfg.minio_bucket = minio_bucket ? minio_bucket : "lyra-media";
+    cfg.minio_region = minio_region ? minio_region : "us-east-1";
     cfg.minio_endpoint = cfg.minio_host + std::string(":") + cfg.minio_port;
 
     if (cfg.service_port.empty()) {

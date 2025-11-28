@@ -11,6 +11,7 @@ public:
     std::string minio_access_key;
     std::string minio_secret_key;
     std::string minio_bucket;
+    std::string minio_region;
     std::string minio_endpoint;
     static Config Load();
 };

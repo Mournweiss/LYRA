@@ -3,6 +3,7 @@ package handlers
 import (
     "context"
     "log"
+    "time"
     "github.com/lyra/api-gateway/internal/models"
     "github.com/lyra/api-gateway/internal/clients"
     "github.com/lyra/api-gateway/internal/errors"
@@ -47,24 +48,31 @@ func StartTaskWorker(ctx context.Context, redisClient *clients.RedisClient, whis
     taskChan := make(chan string, 100)
 
     go func() {
+        ticker := time.NewTicker(1 * time.Second) // Scan every second
+        defer ticker.Stop()
+
         for {
             select {
             case <-ctx.Done():
-                log.Println("[Worker] Task scanner stopped")
+                log.Println("[Scanner] Task scanner stopped")
                 close(taskChan)
                 return
-            default:
+            case <-ticker.C:
                 taskIDs, err := redisClient.ListPendingTaskIDs(ctx)
                 if err != nil {
-                    log.Printf("[Worker] Failed to scan Redis: %v", err)
+                    log.Printf("[Scanner] Failed to scan Redis: %v", err)
                     continue
                 }
+
                 for _, taskID := range taskIDs {
                     select {
                     case taskChan <- taskID:
+                        log.Printf("[Scanner] Queued task %s for processing", taskID)
                     case <-ctx.Done():
                         close(taskChan)
                         return
+                    default:
+                        log.Printf("[Scanner] Task channel full, skipping task %s", taskID)
                     }
                 }
             }
@@ -73,6 +81,7 @@ func StartTaskWorker(ctx context.Context, redisClient *clients.RedisClient, whis
 
     for i := 0; i < concurrency; i++ {
         go func(workerID int) {
+            log.Printf("[Worker-%d] Started", workerID)
             for taskID := range taskChan {
                 select {
                 case <-ctx.Done():
@@ -82,6 +91,7 @@ func StartTaskWorker(ctx context.Context, redisClient *clients.RedisClient, whis
                     processTask(ctx, redisClient, whisperServiceAddr, taskID, workerID)
                 }
             }
+            log.Printf("[Worker-%d] Stopped", workerID)
         }(i + 1)
     }
 }
@@ -92,8 +102,19 @@ func processTask(ctx context.Context, redisClient *clients.RedisClient, whisperS
         log.Printf("[Worker-%d] Failed to fetch task %s: %v", workerID, taskID, err)
         return
     }
+
+    if task.Status != models.StatusPending {
+        log.Printf("[Worker-%d] Task %s already being processed (status: %s), skipping", workerID, taskID, task.Status)
+        return
+    }
+
+    err = redisClient.UpdateTaskStatus(ctx, taskID, models.StatusRunning, "", "")
+    if err != nil {
+        log.Printf("[Worker-%d] Failed to update task %s status to running: %v", workerID, taskID, err)
+        return
+    }
+
     log.Printf("[Worker-%d] Processing task %s", workerID, task.TaskID)
-    _ = redisClient.UpdateTaskStatus(ctx, task.TaskID, models.StatusRunning, "", "")
     req := &pb.TranscribeRequest{
         TaskId:  task.TaskID,
         FileKey: task.FileKey,
