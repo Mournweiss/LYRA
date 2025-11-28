@@ -16,12 +16,29 @@ success() { echo -e "${COLOR_SUCCESS}$1${COLOR_RESET}"; }
 
 ORCHESTRATOR=""
 TELEGRAM_TOKEN=""
+FOREGROUND_MODE=false
 
 ARTIFACT_PATHS=(
     "services/api-gateway/proto-context"
     "services/whisper-service/proto-context"
     "services/telegram-bot/proto-context"
 )
+
+show_help() {
+    cat << EOF
+LYRA Build Script
+
+Usage: $0 [OPTIONS]
+
+Options:
+    -p, --podman                Use podman-compose as orchestrator
+    -d, --docker                Use docker-compose as orchestrator
+    -t, --telegram-token TOKEN  Set Telegram bot token in .env file
+    -f, --foreground            Run containers in foreground mode (not detached)
+    -h, --help                  Show this help message
+
+EOF
+}
 
 parse_args() {
     while [[ $# -gt 0 ]]; do
@@ -37,6 +54,14 @@ parse_args() {
             --telegram-token|-t)
                 TELEGRAM_TOKEN="$2"
                 shift 2
+                ;;
+            --foreground|-f)
+                FOREGROUND_MODE=true
+                shift
+                ;;
+            --help|-h)
+                show_help
+                exit 0
                 ;;
             *)
                 warn "Unknown argument: $1"
@@ -110,8 +135,16 @@ generate_env() {
 
 build_project() {
     local compose_cmd="$1"
-    info "Building and starting project using $compose_cmd..."
-    $compose_cmd -f compose.yml up -d --build
+    local compose_args="-f compose.yml up --build"
+
+    if [ "$FOREGROUND_MODE" = false ]; then
+        compose_args="$compose_args -d"
+        info "Building and starting project in daemon mode using $compose_cmd..."
+    else
+        info "Building and starting project in foreground mode using $compose_cmd..."
+    fi
+
+    $compose_cmd $compose_args
     success "Build and startup completed"
 }
 
