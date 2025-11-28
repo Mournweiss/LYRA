@@ -33,7 +33,7 @@ USAGE:
 
 COMMANDS:
     install_deps     Install system dependencies
-    build_libs       Build custom libraries (inih, curlpp)
+    build_libs       Build custom libraries (inih, curlpp, pugixml)
     create_configs   Create CMake configuration files
     build_grpc       Build and install gRPC
     build_minio      Build and install minio-cpp
@@ -75,6 +75,7 @@ main() {
             info "Building custom libraries..."
             build_inih_library
             build_curlpp_library
+            build_pugixml_static_library
             ;;
         "create_configs")
             info "Creating CMake configuration files..."
@@ -97,6 +98,7 @@ main() {
             install_system_dependencies
             build_inih_library
             build_curlpp_library
+            build_pugixml_static_library
             create_cmake_configs
             build_grpc
             build_minio_cpp

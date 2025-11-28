@@ -30,8 +30,7 @@ install_system_dependencies() {
         libssl-dev \
         wget \
         libcurl4-openssl-dev \
-        nlohmann-json3-dev \
-        libpugixml-dev
+        nlohmann-json3-dev
 
     success "System dependencies installed successfully"
 }
@@ -58,6 +57,7 @@ build_inih_library() {
         exit 1
     }
 
+    # Cleanup
     cd /
     rm -rf /tmp/inih
 
@@ -65,21 +65,50 @@ build_inih_library() {
 }
 
 build_curlpp_library() {
-    info "Building curlpp library..."
+    info "Building curlpp static library..."
 
     git clone https://github.com/jpbarrette/curlpp.git /tmp/curlpp
 
     cd /tmp/curlpp
 
     mkdir build && cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
     make -j$(nproc)
     make install
+
+    if [ ! -f "/usr/local/lib/libcurlpp.a" ]; then
+        error "Static curlpp library not found at /usr/local/lib/libcurlpp.a"
+        exit 1
+    fi
 
     cd /
     rm -rf /tmp/curlpp
 
-    info "curlpp library built and installed successfully"
+    info "curlpp static library built and installed successfully"
+}
+
+build_pugixml_static_library() {
+    info "Building pugixml static library..."
+
+    git clone -b v1.13 https://github.com/zeux/pugixml.git /tmp/pugixml
+
+    cd /tmp/pugixml
+
+    mkdir build && cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
+    make -j$(nproc)
+    make install
+
+    # Verify static library was created
+    if [ ! -f "/usr/local/lib/libpugixml.a" ]; then
+        error "Static pugixml library not found at /usr/local/lib/libpugixml.a"
+        exit 1
+    fi
+
+    cd /
+    rm -rf /tmp/pugixml
+
+    info "pugixml static library built and installed successfully"
 }
 
 create_cmake_configs() {
@@ -128,9 +157,9 @@ include(CMakeFindDependencyMacro)
 find_dependency(CURL REQUIRED)
 
 if(NOT TARGET unofficial::curlpp::curlpp)
-  add_library(unofficial::curlpp::curlpp UNKNOWN IMPORTED)
+  add_library(unofficial::curlpp::curlpp STATIC IMPORTED)
   set_target_properties(unofficial::curlpp::curlpp PROPERTIES
-    IMPORTED_LOCATION "/usr/local/lib/libcurlpp.so"
+    IMPORTED_LOCATION "/usr/local/lib/libcurlpp.a"
     INTERFACE_INCLUDE_DIRECTORIES "/usr/local/include"
   )
 endif()
@@ -157,15 +186,15 @@ EOF
     mkdir -p /usr/local/lib/cmake/pugixml
     cat > /usr/local/lib/cmake/pugixml/pugixmlConfig.cmake << 'EOF'
 set(pugixml_FOUND TRUE)
-set(pugixml_INCLUDE_DIRS "/usr/include")
+set(pugixml_INCLUDE_DIRS "/usr/local/include")
 set(pugixml_LIBRARIES pugixml)
 set(pugixml_VERSION "1.13.0")
 
 if(NOT TARGET pugixml::pugixml)
-  add_library(pugixml::pugixml UNKNOWN IMPORTED)
+  add_library(pugixml::pugixml STATIC IMPORTED)
   set_target_properties(pugixml::pugixml PROPERTIES
-    IMPORTED_LOCATION "/usr/lib/x86_64-linux-gnu/libpugixml.so"
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+    IMPORTED_LOCATION "/usr/local/lib/libpugixml.a"
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/local/include"
   )
 endif()
 EOF

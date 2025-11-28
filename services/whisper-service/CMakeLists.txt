@@ -52,7 +52,6 @@ target_link_libraries(whisper_grpc_server PRIVATE
     CURL::libcurl
     OpenSSL::SSL
     OpenSSL::Crypto
-    /usr/local/lib/libinih.a
     ${ABSL_STRINGS}
     ${ABSL_BASE}
 )
